@@ -141,7 +141,7 @@ def VBox(children=[], grow=True, align_items="stretch", classes: List[str] = [],
     style_flat = solara.util._flatten_style(style)
     style_flat = f"flex-direction: column; align-items: {align_items};" + style_flat + ";"
     if grow:
-        style += "flex-grow: 1;"
+        style_flat += "flex-grow: 1;"
     class_ = _combine_classes(["d-flex", *classes])
     return v.Sheet(class_=class_, style_=style_flat, elevation=0, children=children)
 
@@ -150,10 +150,9 @@ def VBox(children=[], grow=True, align_items="stretch", classes: List[str] = [],
 def HBox(children=[], grow=True, align_items="stretch", classes: List[str] = [], style: Union[str, Dict[str, str], None] = None):
     """Deprecated. Use `Column` instead."""
     style_flat = solara.util._flatten_style(style)
-    style_flat = f"flex-direction: column; align-items: {align_items};" + style_flat + ";"
-    style = f"flex-direction: row; align-items: {align_items}; "
+    style_flat = f"flex-direction: row; align-items: {align_items};" + style_flat + ";"
     if grow:
-        style += "flex-grow: 1;"
+        style_flat += "flex-grow: 1;"
     class_ = _combine_classes(["d-flex", *classes])
     return v.Sheet(class_=class_, style_=style_flat, elevation=0, children=children)
 
