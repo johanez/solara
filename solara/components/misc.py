@@ -136,23 +136,26 @@ def HTML(tag="div", unsafe_innerHTML=None, style: str = None, classes: List[str]
 
 
 @solara.component
-def VBox(children=[], grow=True, align_items="stretch", classes: List[str] = []):
+def VBox(children=[], grow=True, align_items="stretch", classes: List[str] = [], style: Union[str, Dict[str, str], None] = None):
     """Deprecated. Use `Row` instead."""
-    style = f"flex-direction: column; align-items: {align_items};"
+    style_flat = solara.util._flatten_style(style)
+    style_flat = f"flex-direction: column; align-items: {align_items};" + style_flat + ";"
     if grow:
         style += "flex-grow: 1;"
     class_ = _combine_classes(["d-flex", *classes])
-    return v.Sheet(class_=class_, style_=style, elevation=0, children=children)
+    return v.Sheet(class_=class_, style_=style_flat, elevation=0, children=children)
 
 
 @solara.component
-def HBox(children=[], grow=True, align_items="stretch", classes: List[str] = []):
+def HBox(children=[], grow=True, align_items="stretch", classes: List[str] = [], style: Union[str, Dict[str, str], None] = None):
     """Deprecated. Use `Column` instead."""
+    style_flat = solara.util._flatten_style(style)
+    style_flat = f"flex-direction: column; align-items: {align_items};" + style_flat + ";"
     style = f"flex-direction: row; align-items: {align_items}; "
     if grow:
         style += "flex-grow: 1;"
     class_ = _combine_classes(["d-flex", *classes])
-    return v.Sheet(class_=class_, style_=style, elevation=0, children=children)
+    return v.Sheet(class_=class_, style_=style_flat, elevation=0, children=children)
 
 
 @solara.component
