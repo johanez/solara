@@ -13,13 +13,13 @@ __doc__ = open(HERE / "use_thread.md").read()
 @solara.component
 def Page():
     number, set_number = solara.use_state(17)
-    # the number that proofs it is not a prime
+    # the number that proves it is not a prime
     proof, set_proof = solara.use_state(cast(Optional[int], None))
 
     def work():
         for i in range(3, number):
-            reminder = number % i
-            if reminder == 0:
+            remainder = number % i
+            if remainder == 0:
                 set_proof(i)
                 return False
             # make it always take ~4 seconds
