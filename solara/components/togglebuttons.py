@@ -78,6 +78,7 @@ def ToggleButtonsSingle(
      * `children`: List of buttons to use as values.
      * `on_value`: Callback to call when the value changes.
      * `dense`: Whether to use a dense (smaller) style.
+     * `mandatory`: Whether a choice is mandatory.
      * `style`: CSS style to apply to the top level element.
      * `classes`: List of CSS classes to be applied to the top level element.
     """
@@ -87,12 +88,25 @@ def ToggleButtonsSingle(
     reactive_value = solara.use_reactive(value, on_value)  # type: ignore
     children = [solara.Button(label=str(value)) for value in values] + children
     values = values + [_get_button_value(button) for button in children]  # type: ignore
-    index, set_index = solara.use_state_or_update(values.index(reactive_value.value) if reactive_value.value is not None else 0, key="index")
 
-    def on_index(index):
-        set_index(index)
-        value = values[index]
-        reactive_value.set(value)
+    if mandatory:
+        index, set_index = solara.use_state_or_update(values.index(reactive_value.value) if reactive_value.value is not None else 0, key="index")
+
+        def on_index(index):
+            set_index(index)
+            value = values[index]
+            reactive_value.set(value)
+
+    elif not mandatory:
+        index, set_index = solara.use_state_or_update(values.index(reactive_value.value) if reactive_value.value is not None else None, key="index")
+
+        def on_index(index):
+            set_index(index)
+            if index is not None:
+                value = values[index]
+                reactive_value.set(value)
+            else:
+                reactive_value.set(None)
 
     return cast(
         reacton.core.ValueElement[v.BtnToggle, T],
@@ -107,6 +121,7 @@ def ToggleButtonsMultiple(
     children: List[reacton.core.Element] = [],
     on_value: Callable[[List[T]], None] = None,
     dense: bool = False,
+    mandatory: bool = False,
     classes: List[str] = [],
     style: Union[str, Dict[str, str], None] = None,
 ) -> reacton.core.ValueElement[v.BtnToggle, List[T]]:
@@ -134,6 +149,7 @@ def ToggleButtonsMultiple(
      * `children`: List of buttons to use as values.
      * `on_value`: Callback to call when the value changes.
      * `dense`: Whether to use a dense (smaller) style.
+     * `mandatory`: Whether selecting at least one element is mandatory.
      * `style`: CSS style to apply to the top level element.
      * `classes`: List of CSS classes to be applied to the top level element.
     """
@@ -151,5 +167,7 @@ def ToggleButtonsMultiple(
 
     return cast(
         reacton.core.ValueElement[v.BtnToggle, List[T]],
-        rv.BtnToggle(children=children, multiple=True, mandatory=False, v_model=indices, on_v_model=on_indices, dense=dense, class_=class_, style_=style_flat),
+        rv.BtnToggle(
+            children=children, multiple=True, mandatory=mandatory, v_model=indices, on_v_model=on_indices, dense=dense, class_=class_, style_=style_flat
+        ),
     )
