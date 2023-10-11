@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Literal, Optional, Union, overload
 
 import solara
 from solara.components.component_vue import component_vue
@@ -13,6 +13,7 @@ def MenuWidget(
     style: Optional[str] = None,
     context: bool = False,
     use_absolute: bool = True,
+    close_on_content_click: bool = True,
 ):
     pass
 
@@ -20,7 +21,7 @@ def MenuWidget(
 @solara.component
 def ClickMenu(
     activator: Union[solara.Element, List[solara.Element]],
-    open: Optional[Union[solara.Reactive[bool], bool]] = False,
+    open: Union[solara.Reactive[bool], bool] = False,
     children: List[solara.Element] = [],
     style: Optional[Union[str, Dict[str, str]]] = None,
 ):
@@ -68,7 +69,7 @@ def ClickMenu(
 @solara.component
 def ContextMenu(
     activator: Union[solara.Element, List[solara.Element]],
-    open: Optional[Union[solara.Reactive[bool], bool]] = False,
+    open: Union[solara.Reactive[bool], bool] = False,
     children: List[solara.Element] = [],
     style: Optional[Union[str, Dict[str, str]]] = None,
 ):
@@ -115,10 +116,36 @@ def ContextMenu(
     )
 
 
+@overload
+def Menu(
+    activator: Union[solara.Element, List[solara.Element]],
+    close_on_content_click: Literal[True],
+    open: Optional[Union[solara.Reactive[bool], bool]] = False,
+    children: List[solara.Element] = [],
+    style: Optional[Union[str, Dict[str, str]]] = None,
+) -> solara.Element:
+    ...
+
+
+# If close_on_content_click is False, then the menu will be impossible to close.
+# Thus when close_on_content_click is False, we require open to be reactive.
+# This way the menu can be closed by setting open to False.
+@overload
+def Menu(
+    activator: Union[solara.Element, List[solara.Element]],
+    open: solara.Reactive[bool],
+    close_on_content_click: Literal[False],
+    children: List[solara.Element] = [],
+    style: Optional[Union[str, Dict[str, str]]] = None,
+) -> solara.Element:
+    ...
+
+
 @solara.component
 def Menu(
     activator: Union[solara.Element, List[solara.Element]],
-    open: Optional[Union[solara.Reactive[bool], bool]] = False,
+    open: Union[solara.Reactive[bool], bool] = False,
+    close_on_content_click: bool = True,
     children: List[solara.Element] = [],
     style: Optional[Union[str, Dict[str, str]]] = None,
 ):
@@ -161,4 +188,5 @@ def Menu(
         on_show_menu=open.set,
         style=style_flat,
         use_absolute=False,
+        close_on_content_click=close_on_content_click,
     )
