@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 
 import solara
 from solara.components.component_vue import component_vue
@@ -7,8 +7,9 @@ from solara.components.component_vue import component_vue
 @component_vue("menu.vue")
 def MenuWidget(
     activator: List[solara.Element],
+    show_menu: bool,
+    on_show_menu: Optional[Callable] = None,
     children: List[solara.Element] = [],
-    show_menu: bool = False,
     style: Optional[str] = None,
     context: bool = False,
     use_absolute: bool = True,
@@ -19,6 +20,7 @@ def MenuWidget(
 @solara.component
 def ClickMenu(
     activator: Union[solara.Element, List[solara.Element]],
+    open: Optional[Union[solara.Reactive[bool], bool]] = False,
     children: List[solara.Element] = [],
     style: Optional[Union[str, Dict[str, str]]] = None,
 ):
@@ -44,21 +46,29 @@ def ClickMenu(
     ## Arguments
 
     * activator: Clicking on this element will open the menu. Accepts either a `solara.Element`, or a list of elements.
+    * open: Controls and communicates the state of the menu. If True, the menu is open. If False, the menu is closed.
     * menu_contents: List of Elements to be contained in the menu.
     * style: CSS style to apply. Applied directly onto the `v-menu` component.
     """
-    show = solara.use_reactive(False)
+    open = solara.use_reactive(open)
     style_flat = solara.util._flatten_style(style)
 
     if not isinstance(activator, list):
         activator = [activator]
 
-    return MenuWidget(activator=activator, children=children, show_menu=show.value, style=style_flat)
+    return MenuWidget(
+        activator=activator,
+        children=children,
+        show_menu=open.value,
+        on_show_menu=open.set,
+        style=style_flat,
+    )
 
 
 @solara.component
 def ContextMenu(
     activator: Union[solara.Element, List[solara.Element]],
+    open: Optional[Union[solara.Reactive[bool], bool]] = False,
     children: List[solara.Element] = [],
     style: Optional[Union[str, Dict[str, str]]] = None,
 ):
@@ -85,21 +95,30 @@ def ContextMenu(
     ## Arguments
 
     * activator: Clicking on this element will open the menu. Accepts either a `solara.Element`, or a list of elements.
+    * open: Controls and communicates the state of the menu. If True, the menu is open. If False, the menu is closed.
     * children: List of Elements to be contained in the menu
     * style: CSS style to apply. Applied directly onto the `v-menu` component.
     """
-    show = solara.use_reactive(False)
+    open = solara.use_reactive(open)
     style_flat = solara.util._flatten_style(style)
 
     if not isinstance(activator, list):
         activator = [activator]
 
-    return MenuWidget(activator=activator, children=children, show_menu=show.value, style=style_flat, context=True)
+    return MenuWidget(
+        activator=activator,
+        children=children,
+        show_menu=open.value,
+        on_show_menu=open.set,
+        style=style_flat,
+        context=True,
+    )
 
 
 @solara.component
 def Menu(
     activator: Union[solara.Element, List[solara.Element]],
+    open: Optional[Union[solara.Reactive[bool], bool]] = False,
     children: List[solara.Element] = [],
     style: Optional[Union[str, Dict[str, str]]] = None,
 ):
@@ -123,13 +142,23 @@ def Menu(
     ## Arguments
 
     * activator: Clicking on this element will open the menu. Accepts either a `solara.Element`, or a list of elements.
+    * open: Controls and communicates the state of the menu. If True, the menu is open. If False, the menu is closed.
     * children: List of Elements to be contained in the menu
     * style: CSS style to apply. Applied directly onto the `v-menu` component.
+    * close_on_content_click: If True, clicking on the menu contents will close the menu. If False, the menu will stay open.
     """
-    show = solara.use_reactive(False)
+    open = solara.use_reactive(open)
+
     style_flat = solara.util._flatten_style(style)
 
     if not isinstance(activator, list):
         activator = [activator]
 
-    return MenuWidget(activator=activator, children=children, show_menu=show.value, style=style_flat, use_absolute=False)
+    return MenuWidget(
+        activator=activator,
+        children=children,
+        show_menu=open.value,
+        on_show_menu=open.set,
+        style=style_flat,
+        use_absolute=False,
+    )
