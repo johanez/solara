@@ -117,7 +117,7 @@ items = [
         "icon": "mdi-flask-outline",
         "pages": [
             "confirmation_dialog",
-            "datepicker",
+            "input_date",
             "menu",
             "tab",
             "tabs",

@@ -1,16 +1,19 @@
 import datetime as dt
-from typing import List, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import solara
 import solara.lab
 
 
 @solara.component
-def DatePicker(
-    date: solara.Reactive[dt.date],
+def InputDate(
+    value: solara.Reactive[dt.date],
+    label: str = "Pick a date",
     children: List[solara.Element] = [],
     open: Union[solara.Reactive[bool], bool] = False,
-    date_format: str = "%Y-%m-%d",
+    date_format: str = "%Y/%m/%d",
+    first_day_of_the_week: int = 1,
+    style: Optional[Union[str, Dict[str, str]]] = None,
 ):
     """
     Show a textfield, which when clicked, opens a datepicker. The input date should be a reactive variable of type `datetime.date`.
@@ -36,41 +39,59 @@ def DatePicker(
         ]
 
         with solara.Column():
-            lab.DatePicker(
+            lab.InputDate(
                 date,
-                [solara.Row(children=controls, justify="end", style="width: 100%;")],
-                range_is_open,
+                children=[
+                    solara.Row(children=controls, justify="end", style="width: 100%;")
+                ],
+                open=range_is_open,
+                date_format="%A, %d. %B, %Y",
+                style="width: 350px;",
             )
     ```
 
     ## Arguments
 
-    * date: Reactive variable of type `datetime.date`, or `None`. This date is selected the first time the component is rendered.
+    * value: Reactive variable of type `datetime.date`, or `None`. This date is selected the first time the component is rendered.
+    * label: Text used to label the text field that triggers the datepicker.
     * children: List of Elements to be rendered under the calendar. If empty, a close button is rendered.
     * open: Controls and communicates the state of the datepicker. If True, the datepicker is open. If False, the datepicker is closed.
     Intended to be used in conjunction with a custom set of controls to close the datepicker.
+    * date_format: Sets the format of the date displayed in the text field. Defaults to `"%Y/%m/%d"`.
+    *first_dat_of_the_week: Sets the first day of the week, as an `int` starting count from Sunday (`=0`). Defaults to `1`, which is Monday.
     """
-    date_str = date.value.strftime(f"{date_format}") if date.value is not None else None
+
+    def str_and_format():
+        return value.value.strftime(date_format) if value.value is not None else None
+
+    date_str = solara.use_reactive(str_and_format())
 
     datepicker_is_open = solara.use_reactive(open)  # type: ignore
+    style_flat = solara.util._flatten_style(style)
 
-    def set_date_cast(value):
-        date_value = dt.datetime.strptime(value, f"{date_format}").date()
-        date.value = date_value
+    def set_date_cast(new_value):
+        date_value = dt.datetime.strptime(new_value, "%Y-%m-%d").date()
+        value.value = date_value
+        date_str.set(str_and_format())
 
     input = solara.v.TextField(
-        label="Test",
-        value=date_str,
+        label=label,
+        value=date_str.value,
         on_v_model=set_date_cast,
         append_icon="mdi-calendar",
-        readonly=True,
+        style_=style_flat,
     )
     with solara.lab.Menu(
         activator=input,
         close_on_content_click=False,
         open=datepicker_is_open,
     ):
-        with solara.v.DatePicker(v_model=date_str, on_v_model=set_date_cast):
+        with solara.v.DatePicker(
+            v_model=value.value,
+            on_v_model=set_date_cast,
+            first_day_of_week=first_day_of_the_week,
+            style_="width: 100%;",
+        ):
             if len(children) > 0:
                 for el in children:
                     solara.display(el)
@@ -80,11 +101,14 @@ def DatePicker(
 
 
 @solara.component
-def DateRangePicker(
-    dates: solara.Reactive[List[dt.date]],
+def InputDateRange(
+    value: solara.Reactive[Tuple[dt.date, dt.date]],
+    label: str = "Select dates",
     children: List[solara.Element] = [],
     open: Union[solara.Reactive[bool], bool] = False,
-    date_format: str = "%Y-%m-%d",
+    date_format: str = "%Y/%m/%d",
+    first_day_of_the_week: int = 1,
+    style: Optional[Union[str, Dict[str, str]]] = None,
 ):
     """
     Show a textfield, which when clicked, opens a datepicker that allows users to select a range of dates by choosing a starting and ending date.
@@ -112,36 +136,53 @@ def DateRangePicker(
         ]
 
         with solara.Column():
-            lab.DateRangePicker(
+            lab.InputDateRange(
                 dates,
-                [solara.Row(children=controls, justify="end", style="width: 100%;")],
-                range_is_open,
+                children=[
+                    solara.Row(children=controls, justify="end", style="width: 100%;")
+                ],
+                open=range_is_open,
             )
     ```
 
     ## Arguments
 
-    * dates: Reactive list with elements of type `datetime.date`. For an empty pre-selection of dates, pass a reactive empty list.
+    * value: Reactive tuple with elements of type `datetime.date`. For an empty pre-selection of dates, pass a reactive empty tuple.
+    * label: Text used to label the text field that triggers the datepicker.
     * children: List of Elements to be rendered under the calendar. If empty, a close button is rendered.
     * open: Controls and communicates the state of the datepicker. If True, the datepicker is open. If False, the datepicker is closed.
     Intended to be used in conjunction with a custom set of controls to close the datepicker.
+    * date_format: Sets the format of the date displayed in the text field. Defaults to `"%Y/%m/%d"`.
+    *first_dat_of_the_week: Sets the first day of the week, as an `int` starting count from Sunday (`=0`). Defaults to `1`, which is Monday.
     """
-    date_strings = [date.strftime(f"{date_format}") for date in dates.value]
+    date_strings = [date.strftime(date_format) for date in value.value]
     datepicker_is_open = solara.use_reactive(open)  # type: ignore
+    style_flat = solara.util._flatten_style(style)
 
     def set_dates_cast(values):
-        date_value = [dt.datetime.strptime(value, f"{date_format}").date() for value in values]
-        dates.value = date_value
+        date_value = [dt.datetime.strptime(item, "%Y-%m-%d").date() for item in values]
+        value.value = date_value  # type: ignore
 
     input = solara.v.TextField(
-        label="Test", value=" - ".join(date_strings), on_v_model=set_dates_cast, append_icon="mdi-calendar", readonly=True, style_="min-width: 280px;"
+        label=label,
+        value=" - ".join(date_strings),
+        on_v_model=set_dates_cast,
+        append_icon="mdi-calendar",
+        readonly=True,
+        style_="min-width: 300px;" + style_flat,
     )
     with solara.lab.Menu(
         activator=input,
         close_on_content_click=False,
         open=datepicker_is_open,
     ):
-        with solara.v.DatePicker(v_model=date_strings, on_v_model=set_dates_cast, range=True):
+        with solara.v.DatePicker(
+            v_model=value.value,
+            on_v_model=set_dates_cast,
+            range=True,
+            first_day_of_week=first_day_of_the_week,
+            style_="width: 100%;",
+        ):
             if len(children) > 0:
                 for el in children:
                     solara.display(el)

@@ -1,4 +1,6 @@
-from typing import Callable, Dict, List, Literal, Optional, Union, overload
+from typing import Callable, Dict, List, Optional, Union, overload
+
+from typing_extensions import Literal
 
 import solara
 from solara.components.component_vue import component_vue
