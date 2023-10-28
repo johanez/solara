@@ -295,7 +295,7 @@ def InputDateRange(
         activator=input,
         close_on_content_click=False,
         open_value=datepicker_is_open,
-        use_activator_width=False,
+        #use_activator_width=False,
     ):
         with solara.v.DatePicker(
             v_model=date_standard_strings,
@@ -309,4 +309,4 @@ def InputDateRange(
                     solara.display(el)
             else:
                 with solara.Row(justify="end", style="width: 100%;"):
-                    solara.Button("close", color="primary", on_click=lambda: datepicker_is_open.set(False))
+                    solara.Button("OK", color="primary", on_click=lambda: datepicker_is_open.set(False))
